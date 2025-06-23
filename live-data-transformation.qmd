@@ -1,0 +1,186 @@
+---
+title: "Live Coding - Data transformation"
+format:
+  html:
+    embed-resources: true
+editor: visual
+editor_options: 
+  chunk_output_type: console
+execute:
+  echo: true
+  warning: false
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+
+```
+
+# Data import
+
+```{r}
+
+
+```
+
+## Explore data
+
+The original source of this data is from [washdata.org](https://washdata.org/) WHO/UNICEF Joint Monitoring Programme for Water Supply and Sanitation. Data was pre-processed to prepare data in a consisent format follows tidy data principles.
+
+Income groups are derived from the [World Bank Country and Lending Groups data](https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups).
+
+All code for pre-processing and the imported data can be accessed from the [larnsce/washr GitHub repository](https://github.com/larnsce/washr).
+
+```{r}
+
+
+```
+
+# Data wrangling with dplyr
+
+The `dplyr` R Package aims to provide a function for each basic verb of data manipulation. These verbs can be organised into three categories based on the component of the dataset that they work with:
+
+-   Rows
+-   Columns
+-   Groups of rows
+
+## Rows
+
+### dplyr::filter()
+
+The function `filter()` chooses rows based on column values. To use filtering effectively, you have to know how to select the observations that you want using the comparison operators. R provides the standard suite: \>, \>=, \<, \<=, != (not equal), and == (equal).
+
+```{r}
+
+
+```
+
+#### Your turn
+
+1.  Use the `filter()` function to create a subset from the `sanitation` data object containing national estimates for the year 2020
+
+2.  Store the result as a new object in your environment with the name `sanitation_national_2020`
+
+```{r}
+
+
+```
+
+### dplyr::arrange()
+
+The function `arrange()` changes the order of the rows.
+
+```{r}
+
+
+
+```
+
+## Columns
+
+### dplyr::select()
+
+The function `select()` picks variables based on their names.
+
+```{r}
+
+
+
+```
+
+Helpers select variables by matching patterns in their names:
+
+-   `starts_with()`: Starts with a prefix.
+-   `ends_with()`: Ends with a suffix.
+-   `contains()`: Contains a literal string.
+
+Learn more: https://dplyr.tidyverse.org/reference/select.html
+
+### dplyr::rename()
+
+The function `rename()` changes the name of columns.
+
+```{r}
+
+
+```
+
+### dplyr::relocate()
+
+The function `relocate()` changes the order of the columns.
+
+```{r}
+
+
+```
+
+### dplyr::mutate()
+
+The function `mutate()` changes the values of columns and creates new columns.
+
+```{r}
+
+
+
+```
+
+#### Factors
+
+Categorical variables that have a natural order (ordinal variables) need to be transformed into variable of type factor. They are stored as variables of type character, of which the order is always alphabetical.
+
+```{r}
+#| eval: false
+
+# What is with the order?
+
+ggplot(data = sanitation_national_2020,
+       mapping = aes(x = income_id, 
+                     y = percent, 
+                     fill = income_id)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.1)
+
+
+
+# Let's check again with the new data
+
+# ggplot(data = sanitation_national_2020_fct,
+#        mapping = aes(x = income_id_fct, 
+#                      y = percent, 
+#                      fill = income_id)) +
+#   geom_boxplot(outlier.shape = NA) +
+#   geom_jitter(width = 0.1)
+
+
+```
+
+## Groups of rows
+
+### dplyr::summarise()
+
+```{r}
+
+
+
+```
+
+#### Your turn
+
+1.  Starting with `sanitation_national_2020_fct`, use the `mutate()` function to add a new column with the number of people with access to safely managed sanitation in each country. Name the column people_access (**Tipp: Check out how we did this in dplyr::mutate() section of this document.**)
+
+2.  Use the pipe operator to add another line of code which adds the `drop_na()` function to remove all NAs from the data
+
+3.  Use the pipe operator to add another line of code which adds the `group_by()` function to group the data by region.
+
+4.  Use the pipe operator to add another line of code which adds the `summarise()` to create a summary table that contains the sum of the people_access column (call this people_access) and the sum of the pop column (call this pop) for each region.
+
+5.  Use the pipe operator to add another line of code which adds the `mutate()` function to add a new column with the percentage of people with access to safely managed sanitation in each region. Name the new column percent.
+
+```{r}
+
+
+```

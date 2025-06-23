@@ -1,0 +1,553 @@
+---
+title: "Homework Exercise - Data transformation"
+format:
+  html:
+    embed-resources: true
+editor: visual
+editor_options: 
+  chunk_output_type: console
+execute:
+  echo: true
+  warning: false
+---
+
+# Note!
+
+## Task descriptions and starter code
+
+You will notice that the descriptions of tasks are getting shorter with less detail provided. This is the case for all functions you have previously practiced either in your homework or in live coding exercises in class. Tasks that are **fill in the blanks** exercises will also decrease.
+
+# Task 0: Load R packages
+
+1.  Load the `dplyr`, `readr`, and `ggplot2` R Packages.
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+# Task 1: Data import
+
+**Fill in the blanks**
+
+1.  Use the `read_csv()` function to import the 'country_level_data_0.csv' file from the wk-04/data folder by assigning it to an object name `global_waste_data`
+2.  Run the code contained in the code-chunk
+3.  Render and fix any errors
+
+```{r}
+
+global_waste_data <- read_csv(here::here("data/country_level_data_0.csv"))
+```
+
+# Task 2: Data tidying
+
+## dplyr::select()
+
+### Part 1
+
+**Fill in the blanks**
+
+1.  Start with the `global_waste_data` object and use the `select()` function to create a subset that only keeps the following variables:
+
+-   `iso3c`
+-   all variables that end with "percent" (**Tipp: Use one of the [selection helper functions](https://dplyr.tidyverse.org/reference/select.html)**)
+
+2.  Run the code contained in the code-chunk and fix any errors
+
+3.  Next to the code-chunk option `#| eval:` change the value from `false` to `true`
+
+4.  Render and fix any errors
+
+```{r}
+#| eval: true
+
+global_waste_data |> 
+  select(iso3c, ends_with("percent"))
+```
+
+### Part 2
+
+**Write the code yourself**
+
+1.  Start with the `global_waste_data` object and use the `select()` function to create a subset that only keeps the following variables:
+
+-   `country_name`
+-   `income_id`
+-   `total_msw_total_msw_generated_tons_year`
+-   `population_population_number_of_people`
+-   all variables starting with "composition" (**Tipp: Use one of the [selection helper functions](https://dplyr.tidyverse.org/reference/select.html)**)
+
+2.  Store the subset as a new object in your environment with the name `composition`
+
+3.  Render and fix any errors
+
+```{r}
+
+composition <- global_waste_data |> 
+  select(country_name, 
+         income_id, 
+         population_population_number_of_people, 
+         total_msw_total_msw_generated_tons_year,
+         starts_with("composition"))
+
+```
+
+## dplyr::rename()
+
+**Write the code yourself**
+
+1.  Start with the `composition` object and use the `rename()` function to rename all columns that start with "composition". Shorten the names to keep the waste category only. For example:
+
+-   rename `composition_food_organic_waste_percent` to `food_organic_waste`
+-   rename `composition_glass_percent` to `glass`,
+-   etc.
+
+2.  Rename `total_msw_total_msw_generated_tons_year` to `msw_tons_year`.
+
+3.  Rename `population_population_number_of_people` to `population`
+
+4.  Store the subset as a new object in your environment with the name `composition_tidy`
+
+5.  Render and fix any errors
+
+```{r}
+
+composition_tidy <- composition |> 
+  rename(food_organic_waste = composition_food_organic_waste_percent,
+         glass = composition_glass_percent,
+         metal = composition_metal_percent,
+         other = composition_other_percent,
+         paper_cardboard = composition_paper_cardboard_percent,
+         plastic = composition_plastic_percent,
+         rubber_leather = composition_rubber_leather_percent,
+         wood = composition_wood_percent,
+         yard_garden_green_waste = composition_yard_garden_green_waste_percent,
+         msw_tons_year = total_msw_total_msw_generated_tons_year,
+         population = population_population_number_of_people) 
+
+```
+
+# Task 3: Data transformation
+
+## dplyr::filter()
+
+### Part 1
+
+**Fill in the blanks**
+
+1.  Use the `filter()` function in combination with `is.na()` to create a subset from `composition_tidy` containing observations for countries with missing data for the variable named food_organic_waste
+
+2.  Next to the code-chunk option `#| eval:` change the value from `false` to `true`
+
+```{r}
+#| eval: true
+
+composition_tidy |>  
+  filter(is.na(food_organic_waste))
+
+```
+
+### Part 2
+
+**Write the code yourself**
+
+1.  Use the `filter()` to create a subset from `composition_tidy` containing observations for countries classified as high-income countries (HIC).
+
+```{r}
+
+composition_tidy |> 
+  filter(income_id == "HIC")
+
+```
+
+### Part 3
+
+**Write the code yourself**
+
+1.  Use the `filter()` to create a subset from `composition_tidy` containing observations for countries that are not classified as low-income countries (LIC).
+
+```{r}
+
+composition_tidy |> 
+  filter(income_id != "LIC") 
+
+```
+
+### Part 4
+
+**Write the code yourself**
+
+1.  Create a subset from `composition_tidy` containing observations for countries classified as high-income countries (HIC) and with food and organic waste composition greater than 50%.
+
+```{r}
+
+composition_tidy |> 
+  filter(income_id == "HIC",
+         food_organic_waste > 50)
+
+```
+
+### Part 5
+
+**Write the code yourself**
+
+1.  Create a subset from `composition_tidy` containing observations for countries classified as high-income countries or low-income countries and with other waste composition greater than 40%.
+
+```{r}
+
+composition_tidy |> 
+  filter(income_id == "HIC" | income_id == "LIC",
+         other > 40)
+```
+
+### Part 6
+
+**Write the code yourself**
+
+1.  Create a subset from `composition_tidy` containing observations for countries named Switzerland, Ghana, Kenya, Turkey, Nepal, United States
+
+2.  Render and fix any errors
+
+```{r}
+
+composition_tidy |> 
+  filter(country_name %in% c("Switzerland",
+                             "Ghana",
+                             "Kenya",
+                             "Turkey",
+                             "Nepal",
+                             "United States"))
+
+```
+
+## dplyr::mutate() & dplyr::relocate()
+
+**Write the code yourself**
+
+1.  Use the `mutate()` function to add a new column to `composition_tidy` that is the municipal solid waste generation per capita in kg/year. Name the column `msw_capita_kg_year`.
+
+2.  Use the pipe operator to add another line of code which uses the `relocate()` function to move the `msw_capita_kg_year` after the column `msw_tons_year` column.
+
+3.  Store the result as a new object in your environment with the name `composition_tidy_capita`
+
+4.  Render and fix any errors
+
+```{r}
+
+composition_tidy_capita <-  composition_tidy |> 
+  mutate(msw_capita_kg_year = msw_tons_year / population * 1000) |> 
+  relocate(msw_capita_kg_year, .after = msw_tons_year)
+
+```
+
+## dplyr::mutate() & dplyr::case_when()
+
+In class, we have not yet looked at the `case_when()` function. Use the exercise and the code below to understand and describe what the function does.
+
+1.  Next to the code-chunk option `#| eval:` change the value from `false` to `true`
+
+2.  Run the code contained in the code-chunk and fix any errors
+
+3.  What does the combination of `mutate()` and `case_when()` do?
+
+<!--# Remove this comment and use your own words to anwer the question -->
+
+4.  How is the object `levels_income_cat` used and what does it achieve?
+
+<!--# Remove this comment and use your own words to anwer the question -->
+
+```{r}
+#| eval: true
+
+levels_income_cat <- c("high income", 
+                      "upper-middle income",
+                      "lower-middle income",
+                      "low income")
+
+
+composition_tidy_capita_income_cat <- composition_tidy_capita |> 
+  mutate(income_cat = case_when(
+    income_id == "HIC" ~ "high income",
+    income_id == "UMC" ~ "upper-middle income",
+    income_id == "LMC" ~ "lower-middle income",
+    income_id == "LIC" ~ "low income"
+  )) |> 
+  mutate(income_cat = factor(income_cat, levels = levels_income_cat)) |> 
+  relocate(income_cat, .after = income_id)
+
+
+```
+
+## dplyr::group_by() & dplyr::summarise()
+
+Thank you for working through the previous tasks. I am convinced that you have done a great job, but because my task descriptions aren't always unambiguous, I have imported the data that I would have expected to be created and stored in `composition_tidy_capita_income_cat` at the previous code-chunk. This is to ensure that you can work through the following tasks more smoothly.
+
+1.  Run the code contained in the code-chunk and fix any errors
+
+```{r}
+composition_tidy_capita_income_cat <- read_rds(here::here("data/01-msw-generation-and-composition-by-income.rds"))
+```
+
+### Part 1
+
+**Fill in the blanks**
+
+1.  Starting with `composition_tidy_capita_income_cat`, group the data by `income_id`, then create a summary table containing the number of observations (call this count) for each group.
+
+2.  Run the code contained in the code-chunk and fix any errors
+
+3.  Describe what the resulting table that you can see in the Console shows you.
+
+4.  Next to the code-chunk option `#| eval:` change the value from `false` to `true`
+
+5.  Render and fix any errors
+
+<!--# Remove this comment and use your own words to anwer the question -->
+
+```{r}
+#| eval: true
+
+composition_tidy_capita_income_cat |> 
+  group_by(income_id) |> 
+  summarise(count = n())
+
+```
+
+**Write the code yourself**
+
+1.  Starting with `composition_tidy_capita_income_cat`, group the data by `income_cat`, then create a summary table containing the number of observations (call this count) for each group.
+
+2.  Observe the output in the Console and describe the difference to the resulting table of the previous code-chunk.
+
+<!--# Remove this comment and use your own words to anwer the question -->
+
+```{r}
+
+composition_tidy_capita_income_cat |> 
+  group_by(income_cat) |> 
+  summarise(count = n())
+
+```
+
+**Fill in the blanks**
+
+1.  Starting with `composition_tidy_capita_income_cat`, group the data by `income_cat`, then create a summary table containing the number of observations (call this count) and mean Municipal Solid Waste (MSW) generation (variable `msw_capita_kg_year`) and call this mean_msw_total.
+
+2.  Execute the code and observe the output in the Console.
+
+3.  Why do you see `NA` for mean_msw_total at "high income"?
+
+4.  Remove the `#` at the row starting with `tidyr::`.
+
+5.  Execute the code and observe the output in the Console. What has changed? How is that different to adding `na.rm = TRUE` as an argument to the `mean()` ?
+
+6.  Next to the code-chunk option `#| eval:` change the value from `false` to `true`
+
+7.  Render and fix any errors
+
+```{r}
+#| eval: true
+
+composition_tidy_capita_income_cat |> 
+  tidyr::drop_na(msw_capita_kg_year) |> 
+  group_by(income_cat) |> 
+  summarise(
+    count = n(),
+    mean_msw_total = mean(msw_capita_kg_year)
+  )
+
+```
+
+**Write the code yourself**
+
+1.  Starting with `composition_tidy_capita_income_cat`, group the data by `income_cat`, then create a summary table containing the number of observations (call this count) and mean, median, and standard deviation of MSW generation (call these mean, median, sd).
+
+2.  Ensure that the summary table contains no `NA` by removing rows with `NA` before summarising the data.
+
+3.  Store the summary table as a new object in your environment with the name `table_msw_generation`
+
+```{r}
+
+table_msw_generation <- composition_tidy_capita_income_cat |> 
+  tidyr::drop_na(msw_capita_kg_year) |> 
+  group_by(income_cat) |> 
+  summarise(
+    count = n(),
+    mean = mean(msw_capita_kg_year),
+    median = median(msw_capita_kg_year),
+    sd = sd(msw_capita_kg_year)
+  )
+
+```
+
+**Write the code yourself**
+
+1.  Starting with `composition_tidy_capita_income_cat`, group the data by `income_cat`, then create a summary table containing the number of observations (call this count), mean MSW generation (call this mean_msw_total), mean food and organic waste composition (call this mean_organic), mean plastic waste composition (call this mean_plastic), mean paper and cardboard waste (call this mean_paper_cardboard).
+
+2.  Ensure that the summary table contains no `NA` by removing rows with `NA` before summarising the data.
+
+3.  Store the summary tableas a new object in your environment with the name `table_composition`
+
+```{r}
+
+table_composition <- composition_tidy_capita_income_cat |> 
+  tidyr::drop_na(msw_capita_kg_year, 
+                 food_organic_waste, 
+                 plastic,
+                 paper_cardboard) |> 
+  group_by(income_cat) |> 
+  summarise(
+    count = n(),
+    mean_msw_total = mean(msw_capita_kg_year),
+    mean_organic = mean(food_organic_waste),
+    mean_plastic = mean(plastic),
+    mean_paper_cardboard = mean(paper_cardboard)
+  )
+
+```
+
+# Task 4: Data visualisations
+
+Below, you will see three types of already prepared plots. There is nothing to write here for you, but the plots provide you with some additional code examples for plots.
+
+1.  Execute each code-chunk and observe how the plot in the Plots pane relates to the code.
+
+## Histograms
+
+```{r}
+ggplot(data = composition_tidy_capita_income_cat,
+       mapping = aes(x = food_organic_waste, fill = income_cat)) +
+  geom_histogram()
+```
+
+```{r}
+ggplot(data = composition_tidy_capita_income_cat,
+       mapping = aes(x = plastic, fill = income_cat)) +
+  geom_histogram()
+```
+
+```{r}
+ggplot(data = composition_tidy_capita_income_cat, 
+       mapping = aes(x = paper_cardboard)) +
+  geom_histogram() +
+  facet_wrap(~income_cat)
+```
+
+```{r}
+ggplot(data = composition_tidy_capita_income_cat,
+       mapping = aes(x = other)) +
+  geom_histogram() +
+  facet_wrap(~income_cat)
+```
+
+## Scatterplot
+
+```{r}
+
+ggplot(data = composition_tidy_capita_income_cat,
+       mapping = aes(x = msw_capita_kg_year, 
+                     y = food_organic_waste,
+                     color = income_cat)) +
+  geom_point()
+
+```
+
+## Boxplot
+
+```{r}
+
+ggplot(data = composition_tidy_capita_income_cat,
+       mapping = aes(income_cat,
+                     y = msw_capita_kg_year,
+                     color = income_cat)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 2/4)
+
+
+```
+
+# Task 5: Tables
+
+The [`gt` R Package](https://gt.rstudio.com/index.html) is an extremely powerful package to style tables. Learning the details of how it works is beyond scope of this course, but below is an example for the `table_composition` table that we created when we summarised our data.
+
+1.  Execute the following two code-chunks
+2.  Read the code, observe the output in the Viewer pane, and describe in your own words what each function does
+
+-   `gt()`:
+-   `tab_header()`:
+-   `fmt_number()`:
+-   `starts_with()`:
+-   `cols_labels()`:
+
+```{r}
+# As previously, I have stored the data that I would have expected for the 
+# table_composition object and import it here, so that you can get the following
+# code to work as I intended.
+
+table_composition <- read_rds(here::here("data/03-table-composition.rds"))
+table_msw_generation <-  read_rds(here::here("data/02-table-msw-generation.rds"))
+
+```
+
+```{r}
+
+# loading the gt R package here instead of at the beginning of the script.
+
+library(gt)
+
+table_composition |> 
+  gt() |>
+  tab_header(
+    title = "Municipal Solid Waste by Income",
+    subtitle = "Average generation and composition for three waste categories") |> 
+  fmt_number(
+    columns = starts_with("mean"), 
+    decimals = 1
+  ) |> 
+  cols_label(
+    income_cat = "Income category",
+    count = "number of countries (n)",
+    mean_msw_total = "MSW generation per capita (kg/year)",
+    mean_organic = "food & organic (%)",
+    mean_plastic = "plastic (%)",
+    mean_paper_cardboard = "paper & cardboard (%)"
+  ) 
+  
+```
+
+Below is another table for the report that uses the `knitr` R Package to style the table. Columns first need to be renamed with the `rename()` function, and because the column names have spaces in them, we need to add the single backtick around the column/variable name. The result is also satisying and often all you need to prepare a sound looking table for your report. A great extension to `knitr` is the [`kableExtra` R Package](https://haozhu233.github.io/kableExtra/).
+
+1.  Read the code and describe in your own words what each function does
+
+-   `rename()`:
+-   `knitr::kable()`:
+
+```{r}
+
+table_msw_generation |> 
+  rename(`income category` = income_cat) |> 
+  rename(`number of countries (n)` = count) |> 
+  knitr::kable(digits = 1)
+
+```
+
+# Task 6: Complete assignment
+
+## Stage, Commit & Push to GitHub
+
+1.  Open the Git pane in RStudio. It's in the top right corner in a separate tab.
+2.  **Stage** your changes by checking appropriate box next to all files (if you select one file with your mouse, you can then highlight them all with Ctrl + A on your keyboard and check all boxes)
+3.  Write a meaningful commit message (e.g. "Completed homework assignment 1b) in the **Commit message** box
+4.  Click **Commit**. Note that every commit needs to have a commit message associated with it.
+5.  Go to your course-material GitHub repo and refresh the page. You should see your commit message next to the updated files.
+
+## Open an issue on GitHub
+
+Once you have ensured that the Quarto document renders without errors and you have pushed all your changes to GitHub, it is to complete the assignment by opening an issue on your course-material GitHub repo.
+
+1.  Navigate to your course-material GitHub repo.
+2.  Click on **Issues**, and then **New issue** button.
+3.  Write a meaningful title in the **Title** field
+4.  Tag the course instructor with using the `@` sign in combination with `larnsce` as the username
+5.  Add any questions or comments
