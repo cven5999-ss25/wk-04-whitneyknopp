@@ -13,15 +13,15 @@ Learning reflections are part of your weekly homework and have a weight of 20% o
 
 # Lecture
 
-<!--# Add your reflections on the lecture of this week here -->
-
 # Homework Assignment
 
-<!--# Add your reflections on the homework programming assignment here -->
+I thought the homework assignment was very beneficial to begin writing my own code from scratch. One of the most challenging things to me in coding is starting from the very beginning and breaking it down into manageable tasks that are meaningful from an analysis and interpretation perspective. I find it interesting how many different ways you can write code to accomplish the same thing, this seems to be especially true in the data tidying step.
+
+When filtering the data to remove `NA`, I am curious about the various approaches. If using `filter(!is.na())` in combination with multiple pipes (`|>`), this significantly reduces the size of your data set because it removes any row with a single `NA` across all columns. Is there a way to remove `NA` values separately across each column?
 
 # Readings
 
-<!--# Add your reflections on the required readings here -->
+I thought the version control reading was very interesting and beneficial. While it was presented as a task to which many beginner coders are opposed, it is both crucial for collaboration and tracking changes and updates to your own work. As someone who consistently goes back to old homework assignments and projects to refresh myself on methods/techniques, helping my "future self" follow the flow and changes to work is incredibly helpful. I would like to continue this practice when I am finished with this class. However, I work most often on my local computer in R studio on a shared file from dropbox, so I will have to update/change this.
 
 # Submit learning reflections
 
