@@ -22,8 +22,13 @@ library(tidyr)
 
 # Data import
 
+-   read.csv is from base R
+
+-   read_csv is from readr package, more user-friendly
+
 ```{r}
 
+sanitation <- read_csv(here::here("data/jmp-washdata-indicators-safely-managed-sml.csv"))
 
 ```
 
@@ -37,6 +42,14 @@ All code for pre-processing and the imported data can be accessed from the [larn
 
 ```{r}
 
+# this shows a focus on the columns
+glimpse(sanitation)
+
+# this shows the first 6 rows
+head(sanitation)
+
+# this sohws the last 6 rows
+tail(sanitation)
 
 ```
 
@@ -56,6 +69,35 @@ The function `filter()` chooses rows based on column values. To use filtering ef
 
 ```{r}
 
+# this filters for only the residence that is national
+sanitation |> 
+  filter(residence == "national")
+
+# you can combine filters with a comma
+sanitation |> 
+  filter(residence == "national", iso3 == "SEN")
+
+# filter for multiple entries of the same category, use the vertical pipe ( | )for OR
+sanitation |> 
+  filter(iso3 == "UGA" | iso3 == "GHA" | iso3 == "USA")
+
+# filter for large numbers of "OR" entries, cal also define the vector outside
+# the function and reference it here
+sanitation |> 
+  filter(iso3 %in% c("UGA", "GHA", "USA"))
+
+countries <- c("UGA", "GHA", "USA")
+sanitation |> 
+  filter(iso3 %in% countries)
+
+# filter for NOT equal ( != )
+sanitation |> 
+  filter(residence != "national")
+
+# filter numerical values, in this case you don't need quotations
+sanitation |> 
+  filter(percent > 80)
+
 
 ```
 
@@ -67,7 +109,9 @@ The function `filter()` chooses rows based on column values. To use filtering ef
 
 ```{r}
 
-
+sanitation_national_2020 <- sanitation |> 
+  filter(residence == "national", year == 2020) |> 
+  filter(!is.na(income_id)) # this line removes the observations that are "NA"
 ```
 
 ### dplyr::arrange()
@@ -76,7 +120,13 @@ The function `arrange()` changes the order of the rows.
 
 ```{r}
 
+# order in ascending order by percent
+sanitation |> 
+  arrange(percent)
 
+# order by descending
+sanitation |> 
+  arrage(desc(percent))
 
 ```
 
@@ -86,10 +136,23 @@ The function `arrange()` changes the order of the rows.
 
 The function `select()` picks variables based on their names.
 
+Useful when working with large data sets, only select the ones you want to include
+
+You don't put quotations with `select()` because it is selecting column entities of a data set
+
 ```{r}
 
+santiation |> 
+  select(name, iso3, percent, year)
 
+# you can use a " - " sign to remove a column
+# a " : " operator selects everything in between
+sanitation |> 
+  select(name:percent, -year)
 
+# helpper function "starts_with()"
+sanitation |> 
+  select(name, starts_with("p"))
 ```
 
 Helpers select variables by matching patterns in their names:
@@ -106,6 +169,8 @@ The function `rename()` changes the name of columns.
 
 ```{r}
 
+sanitation |> 
+  rename(country_name = name)
 
 ```
 
@@ -115,15 +180,27 @@ The function `relocate()` changes the order of the columns.
 
 ```{r}
 
+# just using "relocate()" moves the column to the beginning
+sanitation |> 
+  relocate(income_id)
 
+# specify where it will be moved,
+# needs a "full stop" (.) before the "before/after" argument
+sanitation |> 
+  relocate(income_id, .after = year)
 ```
 
 ### dplyr::mutate()
 
 The function `mutate()` changes the values of columns and creates new columns.
 
+Creates a new column of data or overrides values of an existing column
+
 ```{r}
 
+# new column "people_access", with a formula to calculate the values
+sanitation |> 
+  mutate(people_access = pop * percent / 100)
 
 
 ```
@@ -136,6 +213,7 @@ Categorical variables that have a natural order (ordinal variables) need to be t
 #| eval: false
 
 # What is with the order?
+# Order is the income_id, with factors: LIC, LMC, UMC, HIC
 
 ggplot(data = sanitation_national_2020,
        mapping = aes(x = income_id, 
@@ -144,16 +222,25 @@ ggplot(data = sanitation_national_2020,
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(width = 0.1)
 
+# we want to change the order of income_id, which is currently alphabetical, but more
+# informative to have different levels
+
+# define a vector with the levels
+income_levels <- c("LIC", "LMC", "UMC", "HIC")
+
+# add a new column of data with the factor function
+sanitation_national_2020_fct <- sanitation_national_2020 |> 
+  mutate(income_id_fct = factor(income_id, levels = income_levels))
 
 
 # Let's check again with the new data
 
-# ggplot(data = sanitation_national_2020_fct,
-#        mapping = aes(x = income_id_fct, 
-#                      y = percent, 
-#                      fill = income_id)) +
-#   geom_boxplot(outlier.shape = NA) +
-#   geom_jitter(width = 0.1)
+ ggplot(data = sanitation_national_2020_fct,
+        mapping = aes(x = income_id_fct, 
+                      y = percent, 
+                      fill = income_id)) +
+   geom_boxplot(outlier.shape = NA) +
+   geom_jitter(width = 0.1)
 
 
 ```
@@ -162,8 +249,29 @@ ggplot(data = sanitation_national_2020,
 
 ### dplyr::summarise()
 
+`summarize()` on its own doesn't do anything, you have to add an argument
+
 ```{r}
 
+sanitation_national_2020_fct |> 
+  summarize(avg_percent = mean(percent, na.rm = TRUE), # na.rm inside mean() removes                                                        the NA values from calculation,                                                       not from the data set
+            countries_count = n()) # counts the number of countries, this is not accurate because many less countries were removed prior to this calculation
+
+# better option for removing NAs, do it BEFORE mean calculation
+sanitation_national_2020_fct |> 
+  filter(!is.na(percent)) |> 
+  summarize(avg_percent = mean(percent),
+            std_dev = sd(percent),
+            countires_count = n())
+
+# combining group_by() and summarize() is very powerful-- 
+# you can get summary stats for based on the grouping 
+sanitation_national_2020_fct |> 
+  filter(!is.na(percent)) |> 
+  group_by(region) |> 
+  summarize(avg_percent = mean(percent),
+            std_dev = sd(percent),
+            countries_count = n())
 
 
 ```
